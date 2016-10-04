@@ -2,55 +2,7 @@
 import sys, os, shutil, glob, imp, subprocess, time, shlex
 import helper_func
 from helper_func import *
-
-####################################
-# Helper functions
-####################################
-def _generate_a2_cfgFile(spl, uboot, cfgFile):
-
-    splsize = os.stat(spl).st_size
-    ubootsize = os.stat(uboot).st_size
-    a2size = 1024*1024
-
-    f = open(cfgFile, 'w')
-
-    f.write("flash dummy {\n")
-    f.write("    pebsize = 1\n")
-    f.write("    lebsize = 1\n")
-    f.write("    numpebs = %d\n" % a2size)
-    f.write("}\n")
-
-    f.write("image boot.a2 {\n")
-    f.write("    flash{\n")
-    f.write("    }\n")
-    f.write('    flashtype = "dummy"\n')
-    f.write("    partition spl {\n")
-    f.write('        in-partition-table = "no"\n')
-    f.write('        image = "%s" \n' % spl)   
-    f.write("        size = %d" % splsize)
-    f.write("    }\n")
-    f.write("    partition u-boot {\n")
-    f.write('        in-partition-table = "no"\n')
-    f.write('        image = "%s"\n' % uboot)
-    f.write("        size = %d" % ubootsize)
-    f.write("    }\n")
-    f.write("}\n")
-
-    f.close()
-
-def _generate_a2_img():
-    imgFile = os.path.realpath("%s/boot.a2" % ENV['IMAGE_DIR'])
-    rm(imgFile)
-    print_msg("Generating a2 image: %s" % imgFile)
-
-    cfgFile = "%s/boot.a2.cfg" % ENV['IMAGE_DIR']
-    spl = "%s/u-boot-spl.bin.crc" % (ENV['IMAGE_DIR'])
-    uboot = "%s/u-boot.img" % (ENV['IMAGE_DIR'])
-    _generate_a2_cfgFile(spl, uboot, cfgFile)
-
-    run_genimage(cfgFile, ENV['IMAGE_DIR'])
-    return imgFile
-   
+  
 ##############
 # Build the SD disk iamge
 ##############
@@ -67,15 +19,12 @@ def _make_sdimage(outputDir, image, catalog):
 
     # Generate the SD FAT partition config file
     gen_sd_fat_cfg()
-    # Generate the A2 image
-    _generate_a2_img()
 
     print_msg("Generating target image: %s" % imageFile)
     run_genimage(catalog['defaultInfo']['genimage'], ENV['IMAGE_DIR'], None)
 
     # Rename the image file
-    os.rename(tmpImg, imageFile)
-        
+    os.rename(tmpImg, imageFile)      
 
     argStr = "gzip %s" % (imageFile)
     subprocess.call( argStr.split(), cwd=ENV['IMAGE_DIR'] )
