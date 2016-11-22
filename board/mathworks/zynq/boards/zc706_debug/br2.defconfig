@@ -1,0 +1,4 @@
+BR2_LINUX_KERNEL_CUSTOM_REPO_URL="https://github.com/mfornero/linux.git"
+BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="for-xilinx"
+BR2_TARGET_UBOOT_CUSTOM_REPO_URL="https://github.com/mathworks/xilinx-uboot.git"
+BR2_TARGET_UBOOT_CUSTOM_REPO_VERSION="mathworks_zynq_R16.2.0"

@@ -1,0 +1,61 @@
+/{
+	chosen {
+		bootargs = "console=ttyPS0,115200 root=/dev/ram rw earlyprintk cma=128M coherent_pool=16M";
+		linux,stdout-path = "/amba@0/uart@E0001000";
+	};
+};
+
+&fpga_axi {
+	core_clkwiz: clockwiz0 {
+		compatible = "fixed-factor-clock";
+		clocks = <&clkc 15>;
+		#clock-cells = <1>;
+		clock-div = <2>;
+		clock-mult = <1>;
+		clock-output-names = "clk0";
+	};
+
+	axi4stream_mm2s:axidma@40020000 {
+		#dma-cells = <0x1>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-parent = <&intc>;
+		compatible = "xlnx,axi-dma-1.00.a";
+		reg = <0x40020000 0xffff>;
+		xlnx,include-sg = <0x1>;
+		clocks = <&core_clkwiz 0>, <&core_clkwiz 0>, <&core_clkwiz 0>;
+		clock-names = "s_axi_lite_aclk", "m_axi_sg_aclk", "m_axi_mm2s_aclk";
+		xlnx,addrwidth = <0x20>;
+		dma-channel@40020000  {
+			reg = <0x0>;
+			compatible = "xlnx,axi-dma-mm2s-channel";
+			interrupts = <0x0 0x1d 0x4>;
+			dma-channels = <0x1>;
+			xlnx,datawidth = <0x20>;
+		};
+	};
+	axi4stream_s2mm:axidma@40030000 {
+		#dma-cells = <0x1>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-parent = <&intc>;
+		compatible = "xlnx,axi-dma-1.00.a";
+		reg = <0x40030000 0xffff>;
+		xlnx,include-sg = <0x1>;
+		clocks = <&core_clkwiz 0>, <&core_clkwiz 0>, <&core_clkwiz 0>;
+		clock-names = "s_axi_lite_aclk", "m_axi_sg_aclk", "m_axi_mm2s_aclk";
+		xlnx,addrwidth = <0x20>;
+		dma-channel@40030030 {
+			reg = <0x0>;
+			compatible = "xlnx,axi-dma-s2mm-channel";
+			interrupts = <0x0 0x1e 0x4>;
+			dma-channels = <0x1>;			
+			xlnx,datawidth = <0x20>;
+		};
+	};
+    dmatest0: xilinxdmatest@0 {
+        compatible = "xlnx,axi-dma-test-1.00.a";
+		dmas = <&axi4stream_mm2s 0>, <&axi4stream_s2mm 0>;
+		dma-names = "axidma0", "axidma1";
+    };
+};
